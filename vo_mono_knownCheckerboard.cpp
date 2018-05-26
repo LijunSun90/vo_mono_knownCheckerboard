@@ -58,6 +58,7 @@ int main(int argc, char* argv[]){
     float delay = 1.f;
     int board_w = 0;
     int board_h = 0;
+    int win_size = 11;
     // The scale variable here is only used for trajectory display.
     double scale = 0.3;
 
@@ -136,7 +137,7 @@ int main(int argc, char* argv[]){
     int successes = 0;
     // n_boards
     for(int frame=0; frame < n_boards; frame++){
-        cv::Mat image0, image;
+        cv::Mat image0, image, gray_image;
         getline(inImageNames, names);
         image0 = cv::imread(names);
         image_size = image0.size();
@@ -149,7 +150,18 @@ int main(int argc, char* argv[]){
         // Find the board.
         // corners: Locations of the located corners in sub-pixel coordiantes.
         vector<cv::Point2f> corners;
-        bool found = cv::findChessboardCorners(image, board_sz, corners);     
+        bool found = cv::findChessboardCorners(image, board_sz, corners); 
+        cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+        cv::cornerSubPix(
+            gray_image,
+            corners,
+            cv::Size(win_size, win_size),
+            cv::Size(-1, -1),
+            cv::TermCriteria(
+                cv::TermCriteria::EPS | cv::TermCriteria::COUNT,
+                30, 0.1
+            )
+        );
 
         // Draw it.
         //
